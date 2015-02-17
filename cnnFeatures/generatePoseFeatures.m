@@ -1,4 +1,4 @@
-function generatePoseFeatures(proto,suffix,inputSize,classInd,mirror)
+function generatePoseFeatures(proto,suffix,inputSize,classInd,mirror,warpSquare)
 
 globals;
 dataSet = params.vpsDataset;
@@ -16,6 +16,11 @@ suff = '';
 if(mirror)
     suff = 'Mirror';
 end
+
+if(warpSquare)
+    cnn_model.detectors.crop_mode = 'square';
+end
+
 meanNums = [102.9801,115.9465,122.7717]; %magical numbers given by Ross
 for i=1:3
     meanIm(:,:,i) = ones(inputSize)*meanNums(i);
