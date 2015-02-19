@@ -1,7 +1,7 @@
-function [preds,subtype] = poseHypotheses(feat,n,alpha)
+function [preds,scores] = poseHypotheses(feat,n,alpha)
 %POSEHYPOTHESES Summary of this function goes here
 %   Detailed explanation goes here
-
+scores = [];
 globals;
 N = size(feat,1);N1 = 21;N2 = 21;N3 = 21;
 assert(n<=8,'A maximum of 8 hypothesis supported currently');
@@ -13,7 +13,6 @@ indices{3} = 43:63;
 indices{4} = 64:70;
 indices{5} = 71:77;
 indices{6} = 78:84;
-indices{7} = 86:95; %skipping one index because subtypes started from 1 instead of 0 during training
 
 %% Coarse and Fine feature channels
 feat1 = 1./(1+exp(-feat(:,indices{1})));feat1 = bsxfun(@rdivide,feat1,sum(feat1,2));
@@ -31,12 +30,6 @@ feat2c = feat2c(:,repInds);feat2c = bsxfun(@rdivide,feat2c,sum(feat2c,2));
 feat3c = 1./(1+exp(-featScale*feat(:,indices{6})));feat3c = feat3c(:,repInds);
 feat3c = bsxfun(@rdivide,feat3c,sum(feat3c,2));
 
-if(size(feat,2) >= max(indices{7}))
-    [~,subtype] = max(feat(:,indices{7}),[],2);
-else
-    subtype = zeros(N,1);
-end
-
 %% Combining Coarse and Fine Features
 feat1 = (1-alpha)*feat1 + alpha*feat1c;
 feat2 = (1-alpha)*feat2 + alpha*feat2c;
@@ -44,6 +37,7 @@ feat3 = (1-alpha)*feat3 + alpha*feat3c;
 
 %% n-best
 [I1s,I2s,I3s,selections1,selections2,selections3] = nBestF3(feat1,feat2,feat3,n);
+feat1 = log(feat1);feat2 = log(feat2);feat3=log(feat3);
 
 %% Cands
 for cand = 1:n
@@ -51,6 +45,7 @@ for cand = 1:n
     I2 = I2s(sub2ind([N,size(I2s,2)],[1:N]',selections2(:,cand)));
     I3 = I3s(sub2ind([N,size(I3s,2)],[1:N]',selections3(:,cand)));
     preds{cand} = encodePose([(I1 - 11)*pi/10.5,(I2 - 11)*pi/10.5, (I3-0.5)*pi/10.5],params.angleEncoding);
+    scores(:,cand) = feat1(sub2ind(size(feat1),[1:N]',I1)) + feat2(sub2ind(size(feat2),[1:N]',I2)) + feat3(sub2ind(size(feat3),[1:N]',I3));
 end
 
 end

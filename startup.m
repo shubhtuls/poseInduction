@@ -18,7 +18,8 @@ global websiteDir
 global caffeModelDir
 global caffeProtoDir
 
-folders = {'encoding','evaluate','utils','visualization','evaluation','learning','preprocess','rcnnKp','rcnnVp','cnnFeatures','sfm'};
+folders = {'encoding','evaluate','utils','visualization','evaluation','learning','preprocess','rcnnKp','rcnnVp','cnnFeatures','sfm','optimization'};
+
 for i=1:length(folders)
     addpath(genpath(folders{i}));
 end

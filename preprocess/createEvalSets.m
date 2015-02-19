@@ -1,4 +1,4 @@
-function [] = createEvalSets(class,split)
+function [goodInds] = createEvalSets(class,split)
 %CREATEEVALSETS Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -19,7 +19,7 @@ end
 %% Data for train & val sets
 
 var = load(fullfile(cachedir,['rcnnPredsVps' params.vpsDataset],params.features,class));
-feat = var.feat;
+feat = cell2mat(var.feat);
 var = load(fullfile(cachedir,['rotationData' params.vpsDataset],class));
 rotData = var.rotationData;
 

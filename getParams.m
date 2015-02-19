@@ -14,4 +14,7 @@ params.classInds = [1 2 4 5 6 7 9 11 14 18 19 20]; %rigid categories
 params.excludeOccluded = false;
 params.filterBoxes = true; %set to true if you want to weed out small boxes
 
+params.featSimilarityThresh = 0.05;
+params.rotSimilarityThresh = 30; %degrees
+
 end

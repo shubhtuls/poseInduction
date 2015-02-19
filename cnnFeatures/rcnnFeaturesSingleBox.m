@@ -23,7 +23,7 @@ batch_size = rcnn_model.cnn.batch_size;
 % compute features for each batch of region images
 
 feat_dim = -1;
-feat = [];
+feat = {};
 curr = 1;
 disp('Computing Features');
 for j = 1:length(batches)
@@ -44,7 +44,7 @@ for j = 1:length(batches)
   % first batch, init feat_dim and feat
   if j == 1
     feat_dim = length(f)/size(batches{j},4);
-    feat = zeros(length(dataStruct.voc_image_id), feat_dim, 'single');
+    %feat = zeros(length(dataStruct.voc_image_id), feat_dim, 'single');
   end
 
   f = reshape(f, [feat_dim batch_size]);
@@ -56,6 +56,8 @@ for j = 1:length(batches)
     end
   end
 
-  feat(curr:curr+size(f,2)-1,:) = f';
+  f = mat2cell(f',ones(size(f,2),1),size(f,1));
+
+  feat(curr:curr+length(f)-1,:) = f;
   curr = curr + batch_size;
 end
