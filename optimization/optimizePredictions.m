@@ -18,10 +18,19 @@ if(useSaved && exist(fullfile(formulationDir,[class '.mat']),'file'))
 else
     load(fullfile(cachedir,['rcnnPredsVps' params.vpsDataset],'vggConv5',class));
     feat = feat(goodInds);
+    
+    for i=1:length(feat)
+        tmp = reshape(sigmoid(feat{i}),[14 14 512]);
+        for c = 1:512
+            tmp(:,:,c)=tmp(:,:,c)/sum(sum(tmp(:,:,c)));
+        end
+        feat{i} = (tmp(:))';
+    end
+        
     [initPreds,similarFeatInds,similarRotIndLabels] = formulateOptimization(testPreds,feat, encoding,predUnaries);
     save(fullfile(formulationDir,[class '.mat']),'initPreds','similarFeatInds','similarRotIndLabels','feat');
 end
-%keyboard;
+keyboard;
 
 currentPreds = initPreds;
 preds = [];
@@ -63,8 +72,8 @@ for iter = 1:50
 end
 
 %% visualization and results
-%preds = [];
-%for n=1:length(initPreds)
+% preds = [];
+% for n=1:length(initPreds)
 %    preds(n,:) = testPreds{currentPreds(n).choice}(n,:);
 %    [choiceIndex,choiceScores] = updateRotationChoice(n,currentPreds,similarFeatInds,similarRotIndLabels,feat);
 %     if(choiceIndex ~= 1)
@@ -75,14 +84,14 @@ end
 %         visFeatNeighbors(data.test,similarFeatInds{n},n);
 %         pause();close all;
 %     end
-%end
+% end
 
 %% eval
 [testErrsOpt] = evaluatePredictionError({preds},testLabels,encoding,0);
 testAccuracyOpt = sum(testErrsOpt<=30)/numel(testErrsOpt);
 testMedErrorOpt = median(testErrsOpt);
 
-[testErrs] = evaluatePredictionError(testPreds{1},testLabels,encoding,0);
+[testErrs] = evaluatePredictionError(testPreds,testLabels,encoding,0);
 testAccuracy = sum(testErrs<=30)/numel(testErrs);
 testMedError = median(testErrs);
 

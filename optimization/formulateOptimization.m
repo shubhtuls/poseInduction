@@ -18,7 +18,7 @@ end
 
 rotsAll = {};
 
-feat = sigmoid(cell2mat(feat));
+feat = (cell2mat(feat));
 for n=1:N
     for c = 1:C
         rotsAll{n,c} = dcm2quat(reshape(rotsPred{c}(n,:),3,3));

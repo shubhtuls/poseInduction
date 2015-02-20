@@ -69,5 +69,5 @@ closeInds = 2/3*double(rotDists <= thresh) + 1/3*double(rotDists <= 2*thresh);
 end
 
 function err = featDistErr(f1,f2)
-    err = sum(abs(sigmoid(f1)-sigmoid(f2)));
+    err = sum(abs((f1)-(f2)));
 end
