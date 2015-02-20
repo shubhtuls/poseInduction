@@ -30,7 +30,7 @@ else
     [initPreds,similarFeatInds,similarRotIndLabels] = formulateOptimization(testPreds,feat, encoding,predUnaries);
     save(fullfile(formulationDir,[class '.mat']),'initPreds','similarFeatInds','similarRotIndLabels','feat');
 end
-keyboard;
+%keyboard;
 
 currentPreds = initPreds;
 preds = [];
@@ -96,7 +96,6 @@ testAccuracy = sum(testErrs<=30)/numel(testErrs);
 testMedError = median(testErrs);
 
 keyboard;
-
 
 end
 

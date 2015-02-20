@@ -53,6 +53,7 @@ end
 function feat = addFeatMirrorFeat(feat,featMirror)
 
 permInds = [21:-1:1,22:42,63:-1:43,70:-1:64,71:77,84:-1:78];
-feat(:,1:84) = (feat(:,1:84)+featMirror(:,permInds))/2;
-
+for i=1:length(feat)
+    feat{i}(1:84) = (feat{i}(1:84)+featMirror{i}(permInds))/2;
+end
 end
