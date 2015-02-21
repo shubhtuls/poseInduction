@@ -1,4 +1,4 @@
-function [initPreds,similarFeatInds,similarRotIndLabels] = formulateOptimization(preds,feat,encoding,predUnaries)
+function [initPreds,similarFeatInds,similarRotIndLabels] = formulateOptimization(preds,feat,encoding,predUnaries,softAssignment)
 %FORMULATEOPTIMIZATION Summary of this function goes here
 %   Detailed explanation goes here
 % initPreds is an array of struct withs (choice,rots,unary)
@@ -26,14 +26,20 @@ for n=1:N
 end
 
 %% initpreds
-initPreds = struct('unary',{},'rots',{},'choice',{});
-%unaries = ones(1,C)./([1:C]);
-%unaries = sqrt(unaries);
+initPreds = struct('unary',{},'rots',{},'probs',{},'choice',{});
 
 for n = 1:N
     predThis = struct;
     predThis.unary = predUnaries(n,:);
     predThis.rots = {};
+    if(softAssignment)
+        predThis.probs = predThis.unary - log(sum(exp(predThis.unary)));
+    else
+        predThis.probs = -Inf(size(predThis.unary));
+        [~,maxInd] = max(predThis.unary);
+        predThis.probs(maxInd) = 0;
+    end
+    
     for c = 1:C
         predThis.rots{c} = rotsAll{n,c};
     end

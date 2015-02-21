@@ -13,7 +13,7 @@ cnn_model.cnn.input_size = inputSize;
 padRatio = 0.00;
 suff = '';
 
-if(mirror)
+if(mirror==1)
     suff = 'Mirror';
 end
 
@@ -42,10 +42,16 @@ for ind = classInd
     feat = rcnnFeaturesSingleBox(tmp,cnn_model,0,true);
     if(mirror)
         featMirror = rcnnFeaturesSingleBox(tmp,cnn_model,1,true);
-        feat = addFeatMirrorFeat(feat,featMirror);
+	if(mirror==1)
+	    feat = addFeatMirrorFeat(feat,featMirror);
+	end
     end
     %keyboard;
-    save(fullfile(saveDir,class),'feat');
+    if(mirror==2)
+	save(fullfile(saveDir,class),'feat','featMirror');
+    else
+	save(fullfile(saveDir,class),'feat');
+    end
 end
 
 end
