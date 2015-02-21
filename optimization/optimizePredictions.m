@@ -1,15 +1,29 @@
-function [preds] = optimizePredictions(class,useSaved,useMirror,useSoftAssignment)
+function [preds] = optimizePredictions(class,useSaved,useMirror,useSoftAssignment,azimuthOnly)
 %OPTIMIZEPREDICTIONS Summary of this function goes here
 %   Detailed explanation goes here
+% useSaved is 0/1 : 1 means it uses
+% useMirror is 0/1 : 1 uses mirrored instances as well for optimization
+% useSoftAssignment : use hard or soft assignments
+% azimuthOnly : uses only azimuth similarity for optimization (works similar either way)
+
 globals;
 encoding = params.angleEncoding;
 goodInds = createEvalSets(class,0); %no train/val/test splits
+visSwitches = 0;
+visErrors = 0;
 
 %% Predictions from CNN
 data = load(fullfile(cachedir,'evalSets',class));
 [~,~,testLabels,~,~,testFeats] = generateEvalSetData(data);
-[testPreds,predUnaries] = poseHypotheses(testFeats,params.nHypotheses,0);
-N = size(testPreds{1},1);
+[testPredsAec,predUnaries] = poseHypotheses(testFeats,params.nHypotheses,0);
+N = size(testPredsAec{1},1);
+
+testPreds = testPredsAec;
+if(azimuthOnly)
+    for i=1:length(testPredsAec)
+        testPreds{i}(:,1:2)=0;
+    end
+end
 
 %% mirrored preds
 predUnaries = vertcat(predUnaries,predUnaries);
@@ -60,7 +74,7 @@ end
 currentPreds = initPreds;
 preds = [];
 for n=1:N
-    preds(n,:) = testPreds{currentPreds(n).choice}(n,:);
+    preds(n,:) = testPredsAec{currentPreds(n).choice}(n,:);
 end
 
 %% iterate
@@ -92,7 +106,7 @@ for iter = 1:50
             if(choiceScores(choiceIndex) - choiceScores(currentPreds(n).choice) > 1/iter)
                 currentPreds(n).choice = choiceIndex;
                 if(n<=N)
-                    preds(n,:) = testPreds{currentPreds(n).choice}(n,:);
+                    preds(n,:) = testPredsAec{currentPreds(n).choice}(n,:);
                 end
                 numFlips = numFlips+1;
             end
@@ -110,7 +124,11 @@ end
 testAccuracyOpt = sum(testErrsOpt<=30)/numel(testErrsOpt);
 testMedErrorOpt = median(testErrsOpt);
 
-[testErrs,predBest] = evaluatePredictionError(testPreds,testLabels,encoding,0);
+[testErrsBase] = evaluatePredictionError(testPredsAec(1),testLabels,encoding,0);
+testAccuracyBase = sum(testErrsBase<=30)/numel(testErrsBase);
+testMedErrorBase = median(testErrsBase);
+
+[testErrs,predBest] = evaluatePredictionError(testPredsAec,testLabels,encoding,0);
 testAccuracy = sum(testErrs<=30)/numel(testErrs);
 testMedError = median(testErrs);
 
@@ -118,40 +136,43 @@ testMedError = median(testErrs);
 keyboard;
 
 %% visualization - flipped instances
-% preds = [];
-% for n=1:N
-%    preds(n,:) = testPreds{currentPreds(n).choice}(n,:);
-%    [choiceIndex,choiceScores] = updateRotationChoice(n,currentPreds,similarFeatInds);
-%     if(choiceIndex ~= 1)
-%         scores = choiceScores([initPreds(n).choice choiceIndex]);
-%         prediction = [testPreds{initPreds(n).choice}(n,:);testPreds{choiceIndex}(n,:)];
-%         visualizeOptimizationSwitch(prediction,encoding,class,data.test.voc_ids{n},data.test.dataset{n},data.test.bboxes(n,:),data.test.objectInds(n),scores);
-%         figure();
-%         visFeatNeighbors(data.test,similarFeatInds{n},n);
-%         pause();close all;
-%     end
-% end
-
-%% visualization - incorrect instances
-preds = [];
-for n=randperm(N)
-   preds(n,:) = testPreds{currentPreds(n).choice}(n,:);
-   [choiceIndex,choiceScores] = updateRotationChoice(n,currentPreds,similarFeatInds);
-    if(testErrs(n) < testErrsOpt(n))
-        for c = 1:length(testPreds)
-            if(sum(abs(testPreds{c}(n,:)-predBest(n,:)))==0)
-                bestInd = c;
-            end
+if(visSwitches)
+    preds = [];
+    for n=1:N
+       preds(n,:) = testPreds{currentPreds(n).choice}(n,:);
+       [choiceIndex,choiceScores] = updateRotationChoice(n,currentPreds,similarFeatInds);
+        if(choiceIndex ~= 1)
+            scores = choiceScores([initPreds(n).choice choiceIndex]);
+            prediction = [testPreds{initPreds(n).choice}(n,:);testPreds{choiceIndex}(n,:)];
+            visualizeOptimizationSwitch(prediction,encoding,class,data.test.voc_ids{n},data.test.dataset{n},data.test.bboxes(n,:),data.test.objectInds(n),scores);
+            figure();
+            visFeatNeighbors(data.test,similarFeatInds{n},n);
+            pause();close all;
         end
-        scores = choiceScores([choiceIndex bestInd]);
-        prediction = [preds(n,:);predBest(n,:)];
-        visualizeOptimizationSwitch(prediction,encoding,class,data.test.voc_ids{n},data.test.dataset{n},data.test.bboxes(n,:),data.test.objectInds(n),scores);
-        figure();
-        visFeatNeighbors(data.test,similarFeatInds{n},n);
-        pause();close all;
     end
 end
 
+%% visualization - incorrect instances
+if(visErrors)
+    preds = [];
+    for n=randperm(N)
+       preds(n,:) = testPredsAec{currentPreds(n).choice}(n,:);
+       [choiceIndex,choiceScores] = updateRotationChoice(n,currentPreds,similarFeatInds);
+        if(testErrs(n) < testErrsOpt(n))
+            for c = 1:length(testPredsAec)
+                if(sum(abs(testPredsAec{c}(n,:)-predBest(n,:)))==0)
+                    bestInd = c;
+                end
+            end
+            scores = choiceScores([choiceIndex bestInd]);
+            prediction = [preds(n,:);predBest(n,:)];
+            visualizeOptimizationSwitch(prediction,encoding,class,data.test.voc_ids{n},data.test.dataset{n},data.test.bboxes(n,:),data.test.objectInds(n),scores);
+            figure();
+            visFeatNeighbors(data.test,similarFeatInds{n},n);
+            pause();close all;
+        end
+    end
+end
 
 
 end
