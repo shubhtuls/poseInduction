@@ -23,4 +23,3 @@ for i=1:numel(featSimilarInds)
 end
 
 end
-

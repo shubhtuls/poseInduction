@@ -4,10 +4,11 @@ function [rotationData] = readData(cls)
 
 globals;
 
-%pascalData = readDataPascal(cls,'2012');
+pascalData = readDataPascal(cls,'2012');
 fname = fullfile(rotationPascalDataDir,cls);
-load(fname,'rotationData');
-pascalData = rotationData;
+%load(fname,'rotationData');
+rotationData = pascalData;
+save(fname,'rotationData');
 
 imagenetData = readDataImagenet(cls);
 fname = fullfile(rotationImagenetDataDir,cls);
