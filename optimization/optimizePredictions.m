@@ -33,6 +33,7 @@ if(useMirror)
         testPredsMirror{i} = vertcat(testPreds{i},mirrorFlipPreds(testPreds{i}));
     end
 end
+
 %% set-up optimizattion
 formulationDir = fullfile(cachedir,['optimizationInit' params.vpsDataset],params.features);
 mkdirOptional(formulationDir);
@@ -72,10 +73,17 @@ end
 %keyboard;
 
 currentPreds = initPreds;
-preds = [];
+preds = [];scoreDiff = [];
 for n=1:N
     preds(n,:) = testPredsAec{currentPreds(n).choice}(n,:);
+    unarySort = sort(initPreds(n).unary,'descend');
+    %scoreDiff(n) = unarySort(1)-unarySort(2);
+    scoreDiff(n) = unarySort(1);
 end
+
+%% initial visualization
+%visPoseManifold(preds,scoreDiff,data.test,[2:3:20],1.1);
+%pause();close all;
 
 %% iterate
 
@@ -92,6 +100,11 @@ for iter = 1:50
         else
             probs = -Inf(size(currentPreds(n).probs));
             probs(choiceIndex) = 0;
+        end
+        if(n<=N)
+            unarySort = sort(choiceScores,'descend');
+            %scoreDiff(n) = unarySort(1)-unarySort(2);
+            scoreDiff(n) = unarySort(1);
         end
         currentPreds(n).probs = probs;
 %         if(isinf(min(choiceScores)))
@@ -134,6 +147,10 @@ testMedError = median(testErrs);
 
 %% debug
 keyboard;
+
+%% visualize pose manifold
+visPoseManifold(preds,scoreDiff,data.test,[2:3:20],1);
+pause();close all;
 
 %% visualization - flipped instances
 if(visSwitches)
