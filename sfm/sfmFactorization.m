@@ -67,7 +67,9 @@ S=sqrtm(E)*O2';
 
 try
 while iter1 < iterMax1
-
+    if(~mod(iter1,10))
+        disp(['Iteration ' num2str(iter1) '/' num2str(iterMax1)])
+    end
     W = W - T*ones(1,size(W,2));
     Woit = Wo - T*ones(1,size(W,2));
 

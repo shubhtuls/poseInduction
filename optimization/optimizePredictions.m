@@ -33,6 +33,25 @@ if(useMirror)
         testPredsMirror{i} = vertcat(testPreds{i},mirrorFlipPreds(testPreds{i}));
     end
 end
+predsQuat = zeros(N,4);
+predsQuatMirror = zeros(N,4);
+testLabelsMirror = vertcat(testLabels,mirrorFlipPreds(testLabels));
+rotsLabelMirror = encodePose(testLabelsMirror,'rot');
+
+rotX = diag([1 -1 -1]);
+for n=1:N
+    rotThis = rotX*(reshape(rotsLabelMirror(n,:),3,3))';
+    predsQuat(n,:) = dcm2quat(rotThis);
+    if(predsQuat(n,1) <0)
+        predsQuat(n,:) = -predsQuat(n,:);
+    end
+    rotThis = rotX*(reshape(rotsLabelMirror(n+N,:),3,3))';
+    predsQuatMirror(n,:) = dcm2quat(rotThis);
+    if(predsQuatMirror(n,1) <0)
+        predsQuatMirror(n,:) = -predsQuatMirror(n,:);
+    end
+end
+keyboard;
 
 %% set-up optimizattion
 formulationDir = fullfile(cachedir,['optimizationInit' params.vpsDataset],params.features);

@@ -1,11 +1,8 @@
-function [model] = learnSfmModel(dataStruct,goodInds)
+function [model,goodInds] = learnSfmModel(dataStruct)
 %LEARNSFMMODEL Summary of this function goes here
 %   Detailed explanation goes here
 
-if(iscell(goodInds)) %passed the fnames
-    goodInds = ismember(dataStruct.voc_image_id,goodInds);
-end
-goodInds = goodInds' & cellfun(@(x) ~isempty(x) && (sum(~isnan(x(:)))>=6),dataStruct.kps); %atleast 3 visible keypoints
+goodInds = cellfun(@(x) ~isempty(x) && (sum(~isnan(x(:)))>=6),dataStruct.kps); %atleast 3 visible keypoints
 
 
 D = size(dataStruct.kps{1},1);
@@ -16,21 +13,29 @@ for i=1:length(dataStruct)
     dataStruct.kps{i} = (dataStruct.kps{i} - repmat(bbox([3 4]) + bbox([1 2]),D,1)/2)*10/maxDim;
 end
 
-P = (horzcat(dataStruct.kps{goodInds}));P = P';
-max_em_iter = 100;
+P = (horzcat(dataStruct.kps{goodInds}));
+P = P';
+
+[M , S, ~] = sfmFactorization(P, 50, 10);
 
 %keyboard;
+rots = {};
+ctr = 1;
+for i=1:numel(goodInds)
+    if(goodInds(i))
+        rot = M(2*ctr+[-1 0],:);
+        rot = rot/norm(rot(1,:));
+        rot = [rot;cross(rot(1,:),rot(2,:))];
+        if(det(rot)<0)
+            rot(3,:) = -rot(3,:);
+        end
+        rots{i} = rot;
+        ctr = ctr+1;
+    end
+end
 
-[~, S, ~] = sfmFactorization(P, 200, 10);
-
-%keyboard;
 model.S = S;
-%model.P3s = P3; %just so we sample intelligently
-%model.cs = c;
-%model.Trs = Tr;
-%model.defBasis = [];
-%model.part_names = dataStruct(1).part_names;
-%visualize_3D_basis_shapes(model,wireframe_car());
+model.M = rots;
 
 end
 
