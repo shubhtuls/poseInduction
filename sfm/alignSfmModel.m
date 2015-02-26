@@ -6,6 +6,9 @@ function [R] = alignSfmModel(S,lrEdges,horzEdges,vertEdges)
 % y axis along length of the car (y increases along a horzEdge)
 % YZ plane is the symmetry plane with X increasing from object's anatomical
 % right to left
+if(~isempty(lrEdges) && size(lrEdges,2)~=2)
+    lrEdges = lrEdges';
+end
 
 if(~isempty(horzEdges) && size(horzEdges,2)~=2)
     horzEdges = horzEdges';
@@ -23,7 +26,9 @@ directionsTarget = eye(3);
 for d = 1:3
     for i=1:size(edges{d},1)
         vec = S(:,edges{d}(i,1)) - S(:,edges{d}(i,2));
-        directions(:,d) = directions(:,d) + vec/norm(vec);
+        if(norm(vec)>0.5)
+            directions(:,d) = directions(:,d) + vec/norm(vec);
+        end
     end
     if(norm(directions(:,d)) > 0)
         directions(:,d) = directions(:,d)/norm(directions(:,d));
