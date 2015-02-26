@@ -1,9 +1,8 @@
-function [model,goodInds] = learnSfmModel(dataStruct)
-%LEARNSFMMODEL Summary of this function goes here
+function [rots] = fitSfmModel(dataStruct,model)
+%FITSFMMODEL Summary of this function goes here
 %   Detailed explanation goes here
 
 goodInds = cellfun(@(x) ~isempty(x) && (sum(~isnan(x(:)))>=6),dataStruct.kps); %atleast 3 visible keypoints
-
 
 D = size(dataStruct.kps{1},1);
 
@@ -16,7 +15,7 @@ end
 P = (horzcat(dataStruct.kps{goodInds}));
 P = P';
 
-[M , S, ~] = sfmFactorization(P, 30, 10);
+[M,~,~] = sfmFactorizationKnownShape(P, model.S, 50);
 
 %keyboard;
 rots = {};
@@ -31,10 +30,10 @@ for i=1:numel(goodInds)
         end
         rots{i} = rot;
         ctr = ctr+1;
+    else
+        rots{i} = [];
     end
 end
 
-model.S = S;
-model.M = rots;
-
 end
+

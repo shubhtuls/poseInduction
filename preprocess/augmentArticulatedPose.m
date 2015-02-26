@@ -95,11 +95,52 @@ while(~goodModel)
         disp('Ok, saved !')
     else
         flip = mod(flip+1,2);
-        model.S = diag([1 1 -1])*model.S;
-        close all;
+        model.S = diag([1 1 -1])*model.S;        
+    end
+    close all;
+end
+
+%% computing rotation matrices
+%if(flip)
+%    refRot = diag([-1 -1 1]);
+%else
+%    refRot = diag([1 1 1]);
+%end
+%refRot = eye(3);
+%rots = model.M;
+%for i=1:length(rots)
+%    if(~isempty(rots{i}))
+%        rots{i} = refRot*rots{i}*R';
+%    end
+%end
+model.S = Srot;
+rots = fitSfmModel(dataStruct,model);
+
+
+%% compute euler angles
+%euler = rotationData(i).euler;
+%rots{i}'*angle2dcm(euler(3),-euler(2)-pi/2,euler(1),'ZXZ')
+%%% compute angles for inverse matrix
+% [e1,e2,e3] = dcm2angle(rots{i}','ZXZ');if(e3>0) e3 = e3-2*pi; end 
+% e1 = -e1;e2 = e2-pi/2;e3 = -e3;
+% [e1;e2;e3] =  euler
+
+for i=1:length(rotationData)
+    if(~isempty(rots{i}))
+         %compute euler angles for inverse matrix gives negative of desired
+         % angles in inverse order. Note : I hate euler angles !
+        [e1,e2,e3] = dcm2angle(rots{i}','ZXZ');
+        if(e3>0) 
+            e3 = e3-2*pi;
+        end
+        e1 = -e1;e2 = e2-pi/2;e3 = -e3;
+        pascalData(i).eulersSfm = [e1;e2;e3];
+    else
+        pascalData(i).eulersSfm = [];
     end
 end
 
-
+%% Looking at similarity with p3d eulers
+keyboard;
 
 end
