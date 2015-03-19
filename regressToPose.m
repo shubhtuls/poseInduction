@@ -34,9 +34,9 @@ switch params.optMethod
 end
 
 %keyboard;
-testErrs = evaluatePredictionError(testPreds,testLabels,encoding);
-[valErrs,bestValPred] = evaluatePredictionError(valPreds,valLabels,encoding);
-[trainErrs,bestTrainPred] = evaluatePredictionError(trainPred,trainLabels,encoding);
+testErrs = evaluatePredictionError(testPreds,testLabels,encoding,0);
+[valErrs,bestValPred] = evaluatePredictionError(valPreds,valLabels,encoding,0);
+[trainErrs,bestTrainPred] = evaluatePredictionError(trainPred,trainLabels,encoding,0);
 
 %diff = testPreds - testLabels;
 %mean(sum(diff.*diff,2));

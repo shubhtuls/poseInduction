@@ -3,9 +3,9 @@ classes = {'aeroplane','bicycle','bird','boat','bottle','bus','car','cat','chair
 %classInds = [1 2 4 5 6 7 9 11 14 18 19 20];
 %classInds = [1 2 4 5 6 7 9];
 %classInds = [1 2 6 7 9 14];
-classInds = [1 2 4 5 6 7 9 11 14 18 19 20];
+%classInds = [1 2 4 5 6 7 9 11 14 18 19 20];
 %classInds = [1 2 4 5 6 7 9 14 18 19 20];
-%classInds = [6 14];
+classInds = [12 17];
 numClasses = size(classInds,2);
 
 %% Iterate over pose predictions

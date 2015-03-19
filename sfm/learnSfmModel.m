@@ -2,7 +2,7 @@ function [model,goodInds] = learnSfmModel(dataStruct)
 %LEARNSFMMODEL Summary of this function goes here
 %   Detailed explanation goes here
 
-goodInds = cellfun(@(x) ~isempty(x) && (sum(~isnan(x(:)))>=6),dataStruct.kps); %atleast 3 visible keypoints
+goodInds = cellfun(@(x) ~isempty(x) && (sum(~isnan(x(:)))>=8),dataStruct.kps); %atleast 3 visible keypoints
 
 
 D = size(dataStruct.kps{1},1);

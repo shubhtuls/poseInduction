@@ -1,4 +1,4 @@
-function [preds] = optimizePredictions(class,useSaved,useMirror,useSoftAssignment,azimuthOnly)
+function [preds] = optimizePredictions(class,useSaved,evalPascalViews,useMirror,useSoftAssignment,azimuthOnly)
 %OPTIMIZEPREDICTIONS Summary of this function goes here
 %   Detailed explanation goes here
 % useSaved is 0/1 : 1 means it uses
@@ -15,6 +15,13 @@ visErrors = 0;
 %% Predictions from CNN
 data = load(fullfile(cachedir,'evalSets',class));
 [~,~,testLabels,~,~,testFeats] = generateEvalSetData(data);
+
+visLabels = testLabels(:,[2 3]);
+visLabels(:,2) = mod(visLabels(:,2) + pi,2*pi);
+%showEmbedding(visLabels, data.test.voc_ids, data.test.dataset, data.test.bboxes);
+%keyboard;
+%close all;
+
 [testPredsAec,predUnaries] = poseHypotheses(testFeats,params.nHypotheses,0);
 N = size(testPredsAec{1},1);
 
@@ -51,9 +58,9 @@ for n=1:N
         predsQuatMirror(n,:) = -predsQuatMirror(n,:);
     end
 end
-keyboard;
+%keyboard;
 
-%% set-up optimizattion
+%% set-up optimization
 formulationDir = fullfile(cachedir,['optimizationInit' params.vpsDataset],params.features);
 mkdirOptional(formulationDir);
 if(useSaved && exist(fullfile(formulationDir,[class '.mat']),'file'))
@@ -164,12 +171,25 @@ testMedErrorBase = median(testErrsBase);
 testAccuracy = sum(testErrs<=30)/numel(testErrs);
 testMedError = median(testErrs);
 
+%% eval left/right/frontal
+if(evalPascalViews)
+    evaluatePascalViews(testLabels(:,3),data.test.views)
+    evaluatePascalViews(preds(:,3),data.test.views)
+    evaluatePascalViews(testPredsAec{1}(:,3),data.test.views)
+    disp('hi, add code here !');
+end
+
+%% vis
+visLabels = preds(:,[2 3]);
+visLabels(:,2) = mod(visLabels(:,2) + pi,2*pi);
+showEmbedding(visLabels, data.test.voc_ids, data.test.dataset, data.test.bboxes, testErrs<=40)
+
 %% debug
 keyboard;
 
 %% visualize pose manifold
-visPoseManifold(preds,scoreDiff,data.test,[2:3:20],1);
-pause();close all;
+%visPoseManifold(preds,scoreDiff,data.test,[2:3:20],1);
+%pause();close all;
 
 %% visualization - flipped instances
 if(visSwitches)

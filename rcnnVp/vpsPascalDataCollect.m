@@ -8,8 +8,8 @@ if(nargin<1)
     suffix = '';
 end
 globals;
-mkdir(rcnnVpsDataDir);
-delete([rcnnVpsDataDir '/*.mat']);
+mkdir(rcnnVpsPascalDataDir);
+delete([rcnnVpsPascalDataDir '/*.mat']);
 %candidateThresh = params.candidateThresh;
 candidateThresh = 0.5; %more filtering done later in rcnnTrainValTestCreate
 
@@ -30,17 +30,18 @@ candidateThresh = 0.5; %more filtering done later in rcnnTrainValTestCreate
 
 
 %% Iterate over classes
-classes = {'aeroplane','bicycle','bird','boat','bottle','bus','car','cat','chair','cow','diningtable','dog','horse','motorbike','person','plant','sheep','sofa','train','tvmonitor'};
+classes = {'aeroplane','bicycle','bird','boat','bottle','bus','car','cat','chair','cow','diningtable','dog','horse','motorbike','person','pottedplant','sheep','sofa','train','tvmonitor'};
 %classInds = [1 2 4 5 6 7 9 11 14 18 19 20];
 classInds = [1 2 4 5 7 9 11 18 19 20]; %no motorbike and bus
+articulatedInds = [3 8 10 13 15 16]; %no sheep and dog (12,17)
 
 % no bottles
 %classInds = [1 2 4 6 7 9 11 14 18 19 20];
 rotationDatas = {};
-for c = classInds
+for c = [articulatedInds classInds]
     class = classes{c};
     disp(class);
-    rotationData = load(fullfile(cachedir,['rotationData' suffix],class));
+    rotationData = load(fullfile(cachedir,['rotationDataPascal' suffix],class));
     rotationDatas{c} = rotationData.rotationData;
 end
 
@@ -50,7 +51,7 @@ fnames = [trainIds;valIds];
 for n=1:length(fnames)
     disp([int2str(n) '/' int2str(length(fnames))]);
     candFile = fullfile(pascalCandsDir,[fnames{n} '.mat']);
-    rcnnDataFile = fullfile(rcnnVpsDataDir,[fnames{n} '.mat']);
+    rcnnDataFile = fullfile(rcnnVpsPascalDataDir,[fnames{n} '.mat']);
     
     maskIndices = [];
     if(~exist(candFile,'file'))
@@ -64,7 +65,7 @@ for n=1:length(fnames)
     classIndex = [];
     regionIndex = [];
     
-    for c = classInds
+    for c = [articulatedInds classInds]
         rotationData = rotationDatas{c};
         objInds = find(ismember({rotationData(:).voc_image_id},fnames(n)));
         for o = objInds

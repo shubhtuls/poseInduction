@@ -1,4 +1,4 @@
-function [] = rcnnBinnedJointTrainValTestCreate()
+function [] = rcnnBinnedJointTrainValTestCreate(suffix)
 %RCNNTRAINVALTESTCREATE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -21,12 +21,12 @@ params = getParams();
 %% Train/Val/Test filenames generate
 
 load(fullfile(cachedir,'jointTrainValTestSets.mat'));
+load(fullfile(cachedir,'pascalTrainValIds.mat'));
 finetuneDir = fullfile(cachedir,'rcnnFinetuneVps','binnedJoint');
 mkdir(finetuneDir);
 fnamesSets = {};
-fnamesSets{1} = fnamesTrain;
-fnamesSets{2} = fnamesVal;
-fnamesSets{3} = fnamesTest;
+fnamesSets{1} = unique([trainIds' fnamesTrain]); %train on pascal+imagenet
+fnamesSets{2} = valIds';
 
 %% Generating test files
 %sets = {'Train','Val','Test'};
@@ -35,15 +35,15 @@ sets = {'Train','Val'};
 for s=1:length(sets)
     set = sets{s};
     disp(['Generating data for ' set]);
-    txtFile = fullfile(finetuneDir,[set '.txt']);
+    txtFile = fullfile(finetuneDir,[set suffix '.txt']);
     fid = fopen(txtFile,'w+');
     fnames = fnamesSets{s};
     count = 0;
     for j=1:length(fnames)
     %for j=1:1
         id = fnames{j};
-        if(exist(fullfile(rcnnVpsDataDir,[id '.mat']),'file'))
-            candFile = fullfile(rcnnVpsDataDir,[id '.mat']);
+        if(exist(fullfile(rcnnVpsPascalDataDir,[id '.mat']),'file'))
+            candFile = fullfile(rcnnVpsPascalDataDir,[id '.mat']);
             dataset = 'pascal';
         elseif (exist(fullfile(rcnnVpsImagenetDataDir,[id '.mat']),'file'))
             candFile = fullfile(rcnnVpsImagenetDataDir,[id '.mat']);

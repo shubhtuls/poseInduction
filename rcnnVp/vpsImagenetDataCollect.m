@@ -27,7 +27,7 @@ delete([rcnnVpsImagenetDataDir '/*.mat']);
 
 %% Iterate over classes
 classes = {'aeroplane','bicycle','bird','boat','bottle','bus','car','cat','chair','cow','diningtable','dog','horse','motorbike','person','plant','sheep','sofa','train','tvmonitor'};
-classInds = [1 2 4 5 6 7 9 11 14 18 19 20];
+%classInds = [1 2 4 5 6 7 9 11 14 18 19 20];
 classInds = [1 2 4 5 7 9 11 18 19 20]; %no motorbike and bus
 
 for classInd = classInds

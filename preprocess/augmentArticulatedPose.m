@@ -6,12 +6,10 @@ globals;
 %% init
 load(fullfile(cachedir,'vocKpMetadata'))
 load(fullfile(rotationPascalDataDir,class));
-if(~exist('pascalData','var'))
-    pascalData = rotationData;
-end
+rotationData = pascalData;
 cInd = pascalClassIndex(class);
-partNames = pascalData(1).part_names;
-assert(length(metadata.kp_names{cInd})==length(pascalData(1).part_names));
+partNames = rotationData(1).part_names;
+assert(length(metadata.kp_names{cInd})==length(rotationData(1).part_names));
 
 %% Finding rigid parts and right hand coords sys
 [~,I] = sort(partNames);
@@ -25,6 +23,7 @@ while (numel(rigidKpInds) < 7 && counter <= numel(nKpSrt))
     rigidKpInds = [rigidKpInds metadata.rigid_parts{cInd}{kpSrtIds(counter)}];
     counter = counter + 1;
 end
+%keyboard;
 rigidKpInds = unique(rigidKpInds);
 rigidKpInds = sort(I(rigidKpInds));% is we have 5 parts, rigidKpInds is, say, [2 3 5]
 rigidPartNames =  partNames(rigidKpInds);
@@ -33,7 +32,7 @@ rigidPerm(rigidKpInds) = 1:numel(rigidKpInds); % indexes normal part to its rigi
 %keyboard;
 
 %% add mirrored data
-flipData = createFlippedDataPascal(pascalData,findKpsPerm(pascalData(1).part_names));
+flipData = createFlippedDataPascal(rotationData,findKpsPerm(rotationData(1).part_names));
 
 %% making dataStruct (voc_image_id,kps,bbox)
 dataStruct.bbox = [];
@@ -113,9 +112,21 @@ end
 %        rots{i} = refRot*rots{i}*R';
 %    end
 %end
-model.S = Srot;
-rots = fitSfmModel(dataStruct,model);
 
+model.S = Srot;
+[rots,scales,trs] = fitSfmModel(dataStruct,model);
+
+%% refine cameras using masks
+for i=1:length(rotationData)
+    disp(i)
+    if(~isempty(rots{i}) && ~isempty(rotationData(i).poly_x))
+        mask = ones(rotationData(i).imsize);
+        mask = roipoly(mask,rotationData(i).poly_x,rotationData(i).poly_y);
+        rot = refineCameras(rots{i}*scales(i),(trs(i,:))',model.S,mask,dataStruct.kps{i},1);
+        rot = rot/norm(rot(1,:));
+        rots{i} = rot;
+    end
+end
 
 %% compute euler angles
 %euler = rotationData(i).euler;
@@ -125,22 +136,28 @@ rots = fitSfmModel(dataStruct,model);
 % e1 = -e1;e2 = e2-pi/2;e3 = -e3;
 % [e1;e2;e3] =  euler
 
+goodInds = true(length(rotationData),1);
 for i=1:length(rotationData)
+    rotationData(i).dataset = 'pascal';
     if(~isempty(rots{i}))
          %compute euler angles for inverse matrix gives negative of desired
          % angles in inverse order. Note : I hate euler angles !
         [e1,e2,e3] = dcm2angle(rots{i}','ZXZ');
-        if(e3>0) 
+        if(e3>0)
             e3 = e3-2*pi;
         end
         e1 = -e1;e2 = e2-pi/2;e3 = -e3;
-        pascalData(i).eulersSfm = [e1;e2;e3];
+        rotationData(i).euler = [e1;e2;e3];
     else
-        pascalData(i).eulersSfm = [];
+        rotationData(i).euler = [];
+        goodInds(i)=false;
     end
 end
 
 %% Looking at similarity with p3d eulers
-keyboard;
+%keyboard;
+rotationData = rotationData(goodInds);
+save(fullfile(rotationPascalDataDir,class),'pascalData','rotationData');
+save(fullfile(rotationJointDataDir,class),'rotationData');
 
 end
