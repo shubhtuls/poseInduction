@@ -7,13 +7,16 @@ global rcnnVpsImagenetDataDir
 global rcnnVpsJointDataDir
 global rotationPascalDataDir
 global rotationImagenetDataDir
+global rotationIlsvrcDataDir
 global rotationJointDataDir
 global params
 global pascalImagesDir
 global imagenetImagesDir
+global ilsvrcImagesDir
 global candsDir
 global annotationDir
 global imagenetDir
+global ilsvrcDir
 global websiteDir
 global caffeModelDir
 global caffeProtoDir
@@ -33,6 +36,9 @@ pascalImagesDir = '/work5/shubhtuls/cachedir/Datasets/VOCdevkit/VOC2012/JPEGImag
 imagenetImagesDir = '/work5/shubhtuls/cachedir/Datasets/imagenet/images/';
 imagenetDir = '/work5/shubhtuls/cachedir/Datasets/imagenet/';
 
+ilsvrcImagesDir = '/work5/shubhtuls/cachedir/Datasets/ilsvrc13/ILSVRC2013_DET_train/';
+ilsvrcDir = '/work5/shubhtuls/cachedir/Datasets/ilsvrc13/';
+
 annotationDir = '/work5/shubhtuls/cachedir/Datasets/pascalAnnotations';
 candsDir = '/work5/shubhtuls/cachedir/Datasets/pascalCandidates/candidateAnnotations/';
 
@@ -44,11 +50,15 @@ rcnnVpsJointDataDir = fullfile(cachedir,'rcnnVpsJointData');mkdirOptional(rcnnVp
 
 rotationPascalDataDir = fullfile(cachedir,'rotationDataPascal');mkdirOptional(rotationPascalDataDir);
 rotationImagenetDataDir = fullfile(cachedir,'rotationDataImagenet');mkdirOptional(rotationImagenetDataDir);
+rotationIlsvrcDataDir = fullfile(cachedir,'rotationDataIlsvrc');mkdirOptional(rotationIlsvrcDataDir);
 rotationJointDataDir = fullfile(cachedir,'rotationDataJoint');mkdirOptional(rotationJointDataDir);
 
-websiteDir = '/work5/shubhtuls/website/visualization/poseInduction';
+websiteDir = '/work5/shubhtuls/website/public_html/visualization/poseInduction';
 caffeModelDir = '/work5/shubhtuls/snapshots/poseInduction/finalSnapshots/';
 caffeProtoDir = '/work5/shubhtuls/prototxts/poseInduction/';
+
+%imdbIlsvrc = load(fullfile(ilsvrcDir,'imdbs','imdb_ilsvrc13_val'));imdbIlsvrc = imdbIlsvrc.imdb;
+%roidbIlsvrc = load(fullfile(ilsvrcDir,'roidbs','roidb_ilsvrc13_val'));roidbIlsvrc = roidbIlsvrc.roidb;
 
 clear i;
 clear folders;

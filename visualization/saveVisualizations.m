@@ -19,7 +19,7 @@ else
     load(fullfile(cachedir,'subtypeClusters'));
 end
 
-mkdir(visDir);
+mkdirOptional(visDir);
 delete(fullfile(visDir,'*'));
 
 if(~strcmp(cls,'all'))
@@ -49,9 +49,9 @@ nFractions = length(data.voc_ids)*fractions;
 for j=1:length(data.voc_ids)
     %for j=1:5
 
-    %if(min(abs(j-nFractions)) > 3)
-    %   continue;
-    %end
+    if(j < 408 || min(abs(j-nFractions)) > 3)
+       continue;
+    end
     i = ids(j);
     if(isfield(data,'classes'))
         cls = data.classes{i};
@@ -59,7 +59,7 @@ for j=1:length(data.voc_ids)
         cad = load(CADPath);
         cad = cad.(cls);
     end
-    pascal3Dfile = fullfile(PASCAL3Ddir,'Annotations',[cls '_pascal'],[data.voc_ids{i} '.mat']); 
+    pascal3Dfile = fullfile(PASCAL3Ddir,'Annotations',[cls '_' data.dataset{i}],[data.voc_ids{i} '.mat']); 
     record = load(pascal3Dfile);record = record.record;
     bbox = data.bboxes(i,:);
     objectInd = data.objectInds(i);
@@ -86,6 +86,9 @@ for j=1:length(data.voc_ids)
     %subplot('Position',[0.5,0.5,0.45,0.45]);
     [ imgDir,imgExt] = getDatasetImgDir(data.dataset{i});
     im = imread(fullfile(imgDir,[data.voc_ids{i} imgExt]));
+    bbox(3) = min(bbox(3),size(im,2));
+    bbox(4) = min(bbox(4),size(im,1));
+    
     imBox = im(bbox(2):bbox(4),bbox(1):bbox(3),:);
     
     %imagesc(color_seg(double(data.masks{i}),im));hold on;

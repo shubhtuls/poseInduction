@@ -32,12 +32,12 @@ cnn_model.cnn.batch_size=20;
 saveDir = fullfile(cachedir,['rcnnPredsVps' dataSet],[proto suff]);
 mkdirOptional(saveDir);
 for ind = classInd
-    class = pascalIndexClass(ind)
+    class = pascalIndexClass(ind,dataSet)
     load(fullfile(cachedir,['rotationData' dataSet],class));
     tmp.voc_image_id = {rotationData(:).voc_image_id};
     tmp.bbox = vertcat(rotationData(:).bbox);
     tmp.dataset = {rotationData(:).dataset};
-    tmp.labels = ones(size(tmp.bbox,1),1);
+    tmp.labels = ones(size(tmp.bbox,1),1)*10;
     %keyboard;
     feat = rcnnFeaturesSingleBox(tmp,cnn_model,0,true);
     if(mirror)

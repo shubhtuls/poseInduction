@@ -65,11 +65,11 @@ datasetNames = datasetNames(goodInds);
 
 %% Creating train, val, test partitions
 
-sets = load(fullfile(cachedir,['trainValTestSets' params.vpsDataset]));
 
 %% Train
 if(split)
     inds = ismember(voc_ids,sets.fnamesTrain);
+    sets = load(fullfile(cachedir,['trainValTestSets' params.vpsDataset]));
 else
     inds = true(length(voc_ids),1);
 end

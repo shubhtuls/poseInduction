@@ -59,6 +59,9 @@ for n=1:N
     end
 end
 %keyboard;
+similarityFeatName = params.similarityFeatName;'vggConv5';
+spatialFeat = ~isempty(strfind(similarityFeatName,'Pool')) || ~isempty(strfind(similarityFeatName,'Conv'));
+spatialNormSmoothing = params.spatialNormSmoothing;
 
 %% set-up optimization
 formulationDir = fullfile(cachedir,['optimizationInit' params.vpsDataset],params.features);
@@ -67,19 +70,26 @@ if(useSaved && exist(fullfile(formulationDir,[class '.mat']),'file'))
     load(fullfile(formulationDir,[class '.mat']))
 else
     fg = fspecial('gaussian',[5 5],1);
-    load(fullfile(cachedir,['rcnnPredsVps' params.vpsDataset],'vggConv5',class));
+    load(fullfile(cachedir,['rcnnPredsVps' params.vpsDataset],similarityFeatName,class));
+    %load(fullfile(cachedir,['rcnnPredsVps' params.vpsDataset],'vggSimilarityCommon16',class));
     feat = feat(goodInds);
     if(useMirror)
         featMirror = featMirror(goodInds);
         feat = vertcat(feat,featMirror);
     end
-    for i=1:length(feat)
-        tmp = reshape(sigmoid(feat{i}),[14 14 512]);
-        for c = 1:512
-            tmp(:,:,c)=tmp(:,:,c)/sum(sum(tmp(:,:,c)));
-            %tmp(:,:,c) = conv2(tmp(:,:,c),fg,'same');
+    if(spatialFeat && spatialNormSmoothing)
+        for i=1:length(feat)
+            tmp = reshape(sigmoid(feat{i}),[14 14 512]);
+            for c = 1:512
+                tmp(:,:,c)=tmp(:,:,c)/sum(sum(tmp(:,:,c)));
+                tmp(:,:,c) = conv2(tmp(:,:,c),fg,'same');
+            end
+            feat{i} = (tmp(:))';
         end
-        feat{i} = (tmp(:))';
+    else
+        for i=1:length(feat)
+            feat{i} = sigmoid(feat{i});
+        end
     end
         
     [initPreds,similarFeatInds,similarRotIndLabels] = formulateOptimization(testPredsMirror,feat, encoding, predUnaries,useSoftAssignment);
@@ -95,7 +105,6 @@ for n=1:length(initPreds)
         initPreds(n).probs(maxInd) = 0;
     end
 end
-
 %keyboard;
 
 currentPreds = initPreds;
@@ -112,7 +121,6 @@ end
 %pause();close all;
 
 %% iterate
-
 for iter = 1:50
     if(iter > 1 && numFlips <= 2)
         continue;
@@ -143,6 +151,7 @@ for iter = 1:50
             %prediction = [testPreds{currentPreds(n).choice}(n,:);testPreds{choiceIndex}(n,:)];
             %visualizeOptimizationSwitch(prediction,encoding,class,data.test.voc_ids{n},data.test.dataset{n},data.test.bboxes(n,:),data.test.objectInds(n),scores);
             if(choiceScores(choiceIndex) - choiceScores(currentPreds(n).choice) > 1/iter)
+            %if(choiceScores(choiceIndex) - choiceScores(currentPreds(n).choice) > 0)
                 currentPreds(n).choice = choiceIndex;
                 if(n<=N)
                     preds(n,:) = testPredsAec{currentPreds(n).choice}(n,:);
@@ -173,19 +182,12 @@ testMedError = median(testErrs);
 
 %% eval left/right/frontal
 if(evalPascalViews)
-    evaluatePascalViews(testLabels(:,3),data.test.views)
-    evaluatePascalViews(preds(:,3),data.test.views)
+    [accLabels,~,isCorrectLabels] = evaluatePascalViews(testLabels(:,3),data.test.views);
+    accLabels
+    [accOpt,isGoodOpt,isCorrectOpt] = evaluatePascalViews(preds(:,3),data.test.views);
+    accOpt    
     evaluatePascalViews(testPredsAec{1}(:,3),data.test.views)
-    disp('hi, add code here !');
 end
-
-%% vis
-visLabels = preds(:,[2 3]);
-visLabels(:,2) = mod(visLabels(:,2) + pi,2*pi);
-showEmbedding(visLabels, data.test.voc_ids, data.test.dataset, data.test.bboxes, testErrs<=40)
-
-%% debug
-keyboard;
 
 %% visualize pose manifold
 %visPoseManifold(preds,scoreDiff,data.test,[2:3:20],1);
@@ -230,6 +232,39 @@ if(visErrors)
     end
 end
 
+%% debug
+visLabels = preds(:,[2 3]);
+visLabels(:,2) = mod(visLabels(:,2) + pi,2*pi)-pi;
+%showEmbedding(visLabels, data.test.voc_ids, data.test.dataset, data.test.bboxes, testErrs<=40)
+
+%showEmbedding(visLabels, data.test.voc_ids, data.test.dataset, data.test.bboxes);
+%visPoseClusters(visLabels(:,2), data.test.voc_ids, data.test.dataset, data.test.bboxes);
+
+for n=1:N
+    [~,choiceScores] = updateRotationChoice(n,currentPreds,similarFeatInds);
+    unarySort = sort(choiceScores,'descend');
+    scores(n) = unarySort(1);
+    scoreDiffs(n) = unarySort(1) - unarySort(2);
+end
+%[~,topInds] = sort(scores,'descend');
+%topInds = topInds(1:round(N/3));
+%showEmbedding(visLabels(topInds,:), data.test.voc_ids(topInds), data.test.dataset(topInds), data.test.bboxes(topInds,:));
+%topInds = topInds(1:round(N/3));
+
+%imSaveDir = fullfile(cachedir,'images','poseClustersOpt',class);mkdirOptional(imSaveDir);
+%delete([imSaveDir '/*']);
+%visPoseClusters(visLabels(:,2), data.test.voc_ids, data.test.dataset, data.test.bboxes,imSaveDir);
+%visPoseClusters(visLabels(topInds,2), data.test.voc_ids(topInds), data.test.dataset(topInds), data.test.bboxes(topInds,:),imSaveDir);
+%keyboard;
+
+%% save
+
+inductionData = data.test;
+inductionDir = fullfile(cachedir,'inductionPreds');
+mkdirOptional(inductionDir)
+save(fullfile(inductionDir,class),'inductionData','preds','scores','scoreDiffs')
+
+%keyboard;
 
 end
 

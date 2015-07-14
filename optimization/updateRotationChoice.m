@@ -16,6 +16,7 @@ for c = 1:C
     numSimilarRots = sum(similarRots(rot,currentPreds,params.rotSimilarityThresh));
 
     if(numSimilarRots~=0)
+        %consistentFeatScore = 10*(sum(consistentFeatInds))/(numSimilarRots);
         consistentFeatScore = log(sum(consistentFeatInds)) - 0.5*log(numSimilarRots);
     else
         consistentFeatScore = 0;

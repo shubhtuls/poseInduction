@@ -7,7 +7,7 @@ plotH = 10;
 plotW = 7;
 
 featSimilarInds = [variableIndex featSimilarInds'];
-for i=1:numel(featSimilarInds)
+for i=1:min(plotH*plotW,numel(featSimilarInds))
     j = featSimilarInds(i);
     subplot(plotH,plotW,i);
     [imgDir,imgExt] = getDatasetImgDir(data.dataset{j});

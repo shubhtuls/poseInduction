@@ -12,7 +12,9 @@ end
 
 %load('imagenet_val_embed.mat'); % load x (the embedding 2d locations from tsne)
 points = bsxfun(@minus, points, min(points));
-points = bsxfun(@rdivide, points, max(points));
+divFactor = max(points);
+divFactor(divFactor==0) = 1; %%if only one point
+points = bsxfun(@rdivide, points, divFactor);
 
 %% load validation image filenames
 
@@ -21,10 +23,10 @@ N = length(imgNames);
 %% create an embedding image
 
 Sx = 5000; % size of full embedding image
-Sy = 2500; % size of full embedding image
+Sy = 2600; % size of full embedding image
 
 G = 255*ones(Sy, Sx, 3, 'uint8');
-s = 125; % size of every single image
+s = 200; % size of every single image
 imFrac = 1;
 %Ntake = 50000; ???
 Ntake = size(points,1);
@@ -90,7 +92,7 @@ for i=1:size(abes,1)
    dd(used) = inf; % dont pick these
    [dv,di] = min(dd); % find nearest image
     
-   if(dv < 0.02)
+   if(dv < 0.004)
        used(di) = true; % mark as done
 
        [imPath,imExt] = getDatasetImgDir(imgDatasets{di});

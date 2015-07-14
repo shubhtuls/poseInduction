@@ -27,8 +27,8 @@ for batch = 1:num_batches
   ims = zeros(crop_size, crop_size, 3, batch_size, 'single');
   for j = batch_start:batch_end
     bbox = dataStruct.bbox(j,:);
-    imgDir = getDatasetImgDir(dataStruct.dataset{j});
-    im = imread(fullfile(imgDir,[dataStruct.voc_image_id{j} '.jpg']));
+    [imgDir,imgExt] = getDatasetImgDir(dataStruct.dataset{j});
+    im = imread(fullfile(imgDir,[dataStruct.voc_image_id{j} imgExt]));
     if(size(im,3)==1)
 	im(:,:,2) = im(:,:,1);im(:,:,3)=im(:,:,1);
     end

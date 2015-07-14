@@ -39,6 +39,13 @@ case 'rot'
         t = new_targets(:);
         targets(i,:) = t';
     end
+case 'quat'
+    targets = [];
+    all_targets = angle2dcm(eulers(:,1),eulers(:,2)-pi/2,-eulers(:,3),'ZXZ');
+    for i=1:size(all_targets,3)
+        targets(i,:) = dcm2quat(all_targets(:,:,i));
+    end
+
 otherwise
     error('no such encoding available');
 end

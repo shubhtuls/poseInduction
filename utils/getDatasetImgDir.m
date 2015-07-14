@@ -12,6 +12,10 @@ switch dataset
         imgDir = imagenetImagesDir;
         imgExt = '.jpg';
         return
+    case 'ilsvrc'
+        imgDir = ilsvrcImagesDir;
+        imgExt = '.JPEG';
+        return
 
 end
 
