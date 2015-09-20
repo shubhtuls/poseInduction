@@ -1,4 +1,5 @@
 *.mat
 *.m~
+data
 external
 cachedir
