@@ -16,12 +16,17 @@ for x in $(ls data/PASCAL3D/Images | grep imagenet); do mv data/PASCAL3D/Images/
 mkdir ./data/segkps
 wget -P ./data/segkps/ http://www.cs.berkeley.edu/~shubhtuls/cachedir/vpsKps/segkps.zip
 unzip ./data/segkps/segkps.zip -d ./data/segkps/
-
+wget -P ./data/  http://www.cs.berkeley.edu/~shubhtuls/cachedir/poseInduction/vocKpMetadata.mat
 # Download PASCAL VOC
 wget http://host.robots.ox.ac.uk:8080/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar
+wget http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCdevkit_18-May-2011.tar
 tar -xf VOCtrainval_11-May-2012.tar
 mv VOCdevkit data/
 mv VOCtrainval_11-May-2012.tar data/
+
+tar -xf VOCdevkit_18-May-2011.tar
+mv VOCdevkit/* ./data/VOCdevkit/
+rm -r VOCdevkit
 
 # Download and install caffe
 mkdir external

@@ -2,11 +2,12 @@ function [] = augmentArticulatedPose(class)
 %AUGMENTARTICULATEDPOSE Summary of this function goes here
 %   Detailed explanation goes here
 
+disp(['Computing cameras for ' class]);
 globals;
 %% init
-load(fullfile(cachedir,'vocKpMetadata'))
+load(fullfile(basedir,'data','vocKpMetadata'))
 load(fullfile(rotationPascalDataDir,class));
-rotationData = pascalData;
+
 cInd = pascalClassIndex(class);
 partNames = rotationData(1).part_names;
 assert(length(metadata.kp_names{cInd})==length(rotationData(1).part_names));
@@ -91,7 +92,7 @@ while(~goodModel)
     userIn = input('Is this model aligned ? "y" will save and "n" will realign after flipping \n','s');
     if(strcmp(userIn,'y'))
         goodModel = 1;
-        disp('Ok, saved !')
+        disp('Ok !')
     else
         flip = mod(flip+1,2);
         model.S = diag([1 1 -1])*model.S;        
@@ -117,8 +118,10 @@ model.S = Srot;
 [rots,scales,trs] = fitSfmModel(dataStruct,model);
 
 %% refine cameras using masks
+disp('Using segmentations to improve cameras.');
+pBar = TimedProgressBar( length(rotationData), 30, 'Time Remaining : ', ' Percentage Completion ', 'Camera refinement completed. ');
 for i=1:length(rotationData)
-    disp(i)
+    pBar.progress();
     if(~isempty(rots{i}) && ~isempty(rotationData(i).poly_x))
         mask = ones(rotationData(i).imsize);
         mask = roipoly(mask,rotationData(i).poly_x,rotationData(i).poly_y);
@@ -127,6 +130,7 @@ for i=1:length(rotationData)
         rots{i} = rot;
     end
 end
+pBar.stop();
 
 %% compute euler angles
 %euler = rotationData(i).euler;
@@ -157,7 +161,6 @@ end
 %% Looking at similarity with p3d eulers
 %keyboard;
 rotationData = rotationData(goodInds);
-save(fullfile(rotationPascalDataDir,class),'pascalData','rotationData');
 save(fullfile(rotationJointDataDir,class),'rotationData');
 
 end

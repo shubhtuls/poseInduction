@@ -1,7 +1,7 @@
 global pascalDir
 global cachedir
+global basedir
 global PASCAL3Ddir
-global pascalCandsDir
 global rcnnVpsPascalDataDir
 global rcnnVpsImagenetDataDir
 global rcnnVpsJointDataDir
@@ -13,10 +13,7 @@ global params
 global pascalImagesDir
 global imagenetImagesDir
 global ilsvrcImagesDir
-global candsDir
-global annotationDir
-global imagenetDir
+global segkpAnnotationDir
 global ilsvrcDir
-global websiteDir
 global caffeModelDir
 global caffeProtoDir

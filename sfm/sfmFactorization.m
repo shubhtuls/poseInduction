@@ -64,12 +64,14 @@ O1=o1(:,1:3);
 O2=o2(:,1:3);
 R=O1*sqrtm(E);
 S=sqrtm(E)*O2';
-
+pBar = TimedProgressBar( iterMax1, 40, 'Time Remaining : ', ' Percentage Completion ', 'SfM Completed. ');
+    
 try
 while iter1 < iterMax1
-    if(~mod(iter1,10))
-        disp(['Iteration ' num2str(iter1) '/' num2str(iterMax1)])
-    end
+    %if(~mod(iter1,10))
+    %    disp(['Iteration ' num2str(iter1) '/' num2str(iterMax1)])
+    %end
+    pBar.progress();
     W = W - T*ones(1,size(W,2));
     Woit = Wo - T*ones(1,size(W,2));
 
@@ -103,6 +105,7 @@ catch
     Shape=Shaperet;
     
 end
+pBar.stop();
 
 end
 

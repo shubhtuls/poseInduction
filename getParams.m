@@ -10,7 +10,7 @@ params.candidateThresh = 0.5; %IoU threshold for candidates to be used to in tra
 params.nHypotheses = 3;
 
 params.classInds = [1 2 4 5 6 7 9 11 14 18 19 20]; %rigid categories
-params.articulatedInds = [3 8 10 12 13 15 16 17]; %no sheep and dog
+params.articulatedInds = [3 8 10 12 13 15 16 17]; %other categories
 params.ilsvrcAnimals = [4 6 20 34 35 39 59 60 64 70 72 74 75 84 90 92 96 ...
     97 99 103 106 120 134 141 144 152 157 158 166 198 200];
 

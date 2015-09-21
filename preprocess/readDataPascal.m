@@ -9,7 +9,7 @@ conf.year=year;
 
 conf.dev_kit = pascalDir;
 VOCopts    = get_voc_opts(conf);
-load(fullfile(annotationDir,'segkps',cls));
+load(fullfile(segkpAnnotationDir,cls));
 
 if(nargin < 3)
     occludedTruncated = 0;
