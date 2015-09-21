@@ -24,5 +24,8 @@ globals;
 %end
 
 %% generate files for cnn training
-
+vpsPascalDataCollect()
+vpsImagenetDataCollect()
+rcnnBinnedJointTrainValTestCreate('');
+ 
 end

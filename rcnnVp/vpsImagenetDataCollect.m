@@ -6,7 +6,7 @@ function [] = vpsImagenetDataCollect()
 
 %% Initialize
 globals;
-mkdir(rcnnVpsImagenetDataDir);
+mkdirOptional(rcnnVpsImagenetDataDir);
 delete([rcnnVpsImagenetDataDir '/*.mat']);
 
 %% WINDOW FILE FORMAT

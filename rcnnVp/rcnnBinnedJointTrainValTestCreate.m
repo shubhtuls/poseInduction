@@ -20,12 +20,12 @@ params = getParams();
 
 %% Train/Val/Test filenames generate
 
-load(fullfile(cachedir,'jointTrainValTestSets.mat'));
+load(fullfile(cachedir,'imagenetTrainIds.mat'));
 load(fullfile(cachedir,'pascalTrainValIds.mat'));
 finetuneDir = fullfile(cachedir,'rcnnFinetuneVps','binnedJoint');
-mkdir(finetuneDir);
+mkdirOptional(finetuneDir);
 fnamesSets = {};
-fnamesSets{1} = unique([trainIds' fnamesTrain]); %train on pascal+imagenet
+fnamesSets{1} = unique([trainIds' fnamesTrain']); %train on pascal+imagenet
 fnamesSets{2} = valIds';
 
 %% Generating test files
@@ -62,11 +62,12 @@ for s=1:length(sets)
         count=count+1;
         %%%%%%%%%%%% Insert anakin paths here
         if(strcmp(dataset,'imagenet'))
-            imgFile = ['/data1/shubhtuls/cachedir/imagenet/images/' id '.jpg'];
+            imgFile = fullfile(imagenetImagesDir,[id '.JPEG']);
             imsize = cands.imSize;
         else
-            imgFile = ['/data1/shubhtuls/cachedir/VOCdevkit/VOC2012/JPEGImages/' id '.jpg'];
-            tmp = load(fullfile(pascalCandsDir,id));imsize = size(tmp.sp);
+            imgFile = fullfile(pascalImagesDir,[id '.jpg']);
+            imsize = cands.imSize;
+            %tmp = load(fullfile(pascalCandsDir,id));imsize = size(tmp.sp);
         end
 
         %fprintf(fid,'# %d\n%s\n%s\n%s\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n',count-1,imgFile,reg2spFile,spFile,3,10,10,20,3,imsize(1),imsize(2),numcands);
@@ -75,8 +76,8 @@ for s=1:length(sets)
         %    disp('Oops');
         %end
         for n=1:size(cands.overlap,1)
-            
-            fprintf(fid,'%d %f %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n',...
+            %adding 1s and zeros at end for dummy quaternion input
+            fprintf(fid,'%d %f %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d 1 0 0 0 1 0 0 0\n',...
                 cands.classIndex(n),cands.overlap(n),...
                 cands.bbox(n,1),cands.bbox(n,2),cands.bbox(n,3),cands.bbox(n,4),...
                 ceil(cands.euler(n,1)*10.5/pi+9.5),ceil(-cands.euler(n,1)*10.5/pi+9.5),...

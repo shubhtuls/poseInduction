@@ -86,6 +86,11 @@ else
     save(fullfile(cachedir,'pascalTrainValIds.mat'),'trainIds','valIds');
 end
 
+if ~exist(fullfile(cachedir,'imagenetTrainIds.mat'))
+    fnamesTrain = generateImagenetTrainNames();
+    save(fullfile(cachedir,'imagenetTrainIds.mat'),'fnamesTrain');
+end
+
 if exist('external/caffe/matlab/+caffe')
   addpath('external/caffe/matlab/');
 else
