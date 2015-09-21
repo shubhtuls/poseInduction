@@ -40,8 +40,9 @@ if [ ! -d "$dirVar" ]; then
     git checkout pose
     git pull origin pose
     #now compile caffe and matcaffe in external/caffePose
-    make -j8 caffe
-    make matcaffe
+    #make -j8 caffe
+    #make matcaffe
+    #make pycaffe
     cd ../..
     #echo $dirVar
 fi
