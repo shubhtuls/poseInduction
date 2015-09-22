@@ -1,4 +1,4 @@
-function rcnn_model = rcnn_create_model(cnn_definition_file, cnn_binary_file, cache_name)
+function cnn_model = cnn_create_model(cnn_definition_file, cnn_binary_file)
 % AUTORIGHTS
 % ---------------------------------------------------------
 % Copyright (c) 2014, Ross Girshick
@@ -8,10 +8,6 @@ function rcnn_model = rcnn_create_model(cnn_definition_file, cnn_binary_file, ca
 % LICENSE. Please retain this notice and LICENSE if you use 
 % this file (or any portion of it) in your project.
 % ---------------------------------------------------------
-
-if ~exist('cache_name', 'var') || isempty(cache_name)
-  cache_name = 'none';
-end
 
 %  model = 
 %    cnn: [1x1 struct]
@@ -39,30 +35,24 @@ end
 %    class_to_index: map from class name to column index in W
 
 % init empty convnet
+
+disp(cnn_definition_file);
 assert(exist(cnn_binary_file, 'file') ~= 0);
 assert(exist(cnn_definition_file, 'file') ~= 0);
 cnn.binary_file = cnn_binary_file;
 cnn.definition_file = cnn_definition_file;
+
+% initial param settings
 cnn.batch_size = 256;
 cnn.init_key = -1;
 cnn.input_size = 227;
-% load the ilsvrc image mean
-data_mean_file = './external/caffe/matlab/caffe/ilsvrc_2012_mean.mat';
-assert(exist(data_mean_file, 'file') ~= 0);
-ld = load(data_mean_file);
-image_mean = ld.image_mean; clear ld;
-off = floor((size(image_mean,1) - cnn.input_size)/2)+1;
-image_mean = image_mean(off:off+cnn.input_size-1, off:off+cnn.input_size-1, :);
-cnn.image_mean = image_mean;
+cnn.image_mean = [];
 
 % init empty detectors
-detectors.W = [];
-detectors.B = [];
-detectors.crop_mode = 'warp';
-detectors.crop_padding = 16;
-detectors.nms_thresholds = [];
+cnn.crop_mode = 'warp';
+cnn.crop_padding = 16;
 
 % rcnn model wraps the convnet and detectors
-rcnn_model.cnn = cnn;
-rcnn_model.cache_name = cache_name;
-rcnn_model.detectors = detectors;
+cnn_model = cnn;
+
+end

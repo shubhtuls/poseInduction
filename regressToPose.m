@@ -8,11 +8,12 @@ function [testErrors,testMedErrors,testErrs,testData,testPreds,testLabels] = reg
 globals;
 %params = getParams();
 encoding = params.angleEncoding;
-createEvalSets(class);
+createEvalSets(class,0);
 
 %% Loading Data
 
-data = load(fullfile(cachedir,'splitSets',class));
+%data = load(fullfile(cachedir,'splitSets',class));
+data = load(fullfile(cachedir,'evalSets',class));
 [trainLabels,valLabels,testLabels,trainFeats,valFeats,testFeats] = generateEvalSetData(data);
 
 %% TESTING
@@ -21,22 +22,22 @@ switch params.optMethod
         alphaOpt = 0;
         nHypotheses = params.nHypotheses;
         %disp(alphaOpt)
-        [trainPreds] = poseHypotheses(trainFeats,nHypotheses,alphaOpt);
-        trainPred = trainPreds{1};
+        %[trainPreds] = poseHypotheses(trainFeats,nHypotheses,alphaOpt);
+        %trainPred = trainPreds{1};
         
         [testPreds] = poseHypotheses(testFeats,nHypotheses,alphaOpt);
-        %testPreds = testPreds{1};
+        testPreds = testPreds{1};
         %[testPreds] = bestPoseKeypointCandidate(testPreds,data.test,class);
         
-        [valPreds,valSubtypes] = poseHypotheses(valFeats,nHypotheses,alphaOpt);
+        %[valPreds,valSubtypes] = poseHypotheses(valFeats,nHypotheses,alphaOpt);
         %valPreds = valPreds{1};
         %[valPreds] = bestPoseKeypointCandidate(valPreds,data.val,class);
 end
 
 %keyboard;
 testErrs = evaluatePredictionError(testPreds,testLabels,encoding,0);
-[valErrs,bestValPred] = evaluatePredictionError(valPreds,valLabels,encoding,0);
-[trainErrs,bestTrainPred] = evaluatePredictionError(trainPred,trainLabels,encoding,0);
+%[valErrs,bestValPred] = evaluatePredictionError(valPreds,valLabels,encoding,0);
+%[trainErrs,bestTrainPred] = evaluatePredictionError(trainPred,trainLabels,encoding,0);
 
 %diff = testPreds - testLabels;
 %mean(sum(diff.*diff,2));
@@ -51,7 +52,7 @@ testMedErrors(1) = median(testErrors);
 % grid on;xlim([0 180]);ylim([0 1]);
 % pause();close all;
 
-testErrs = [valErrs;testErrs]; %% using all objects
+%testErrs = [valErrs;testErrs]; %% using all objects
 
 testErrors(1) = sum(testErrs<=30)/numel(testErrs);
 testMedErrors(1) = median(testErrs);

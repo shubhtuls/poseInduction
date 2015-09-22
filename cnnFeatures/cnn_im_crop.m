@@ -1,5 +1,5 @@
 function window = ...
-    rcnn_im_crop(im, bbox, crop_mode, crop_size, padding, image_mean)
+    cnn_im_crop(im, bbox, crop_mode, crop_size, padding, image_mean)
 % window = rcnn_im_crop(im, bbox, crop_mode, crop_size, padding, image_mean)
 %   Crops a window specified by bbox (in [x1 y1 x2 y2] order) out of im.
 %

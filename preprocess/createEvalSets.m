@@ -23,7 +23,9 @@ rotData = var.rotationData;
 varFile = (fullfile(cachedir,['rcnnPredsVps' params.vpsDataset],params.features,[class '.mat']));
 if(exist(varFile,'file'))
     var = load(varFile);
-    feat = cell2mat(var.feat);
+    featInd = find(ismember(var.outNames,'poseClassify'));
+    feat = var.featStruct{featInd};
+    feat = cell2mat(feat);
 else
     disp('Warning : no features')
     feat = zeros(length(rotData),1);

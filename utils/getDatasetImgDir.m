@@ -10,7 +10,7 @@ switch dataset
         return
     case 'imagenet'
         imgDir = imagenetImagesDir;
-        imgExt = '.jpg';
+        imgExt = '.JPEG';
         return
     case 'ilsvrc'
         imgDir = ilsvrcImagesDir;
