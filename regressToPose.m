@@ -1,4 +1,4 @@
-function [testErrors,testMedErrors,testErrs,testData,testPreds,testLabels] = regressToPose(class)
+function [testErrors,testMedErrors,testErrs,testData,testPreds,testLabels] = regressToPose(class, evalPascalViews)
 %[testErrors,testMedErrors] = regressToPose(class)
 %   uses the training/val/test sets specified in parameters and
 % regresses to pose and returns error
@@ -14,7 +14,7 @@ createEvalSets(class,0);
 
 %data = load(fullfile(cachedir,'splitSets',class));
 data = load(fullfile(cachedir,'evalSets',class));
-[trainLabels,valLabels,testLabels,trainFeats,valFeats,testFeats] = generateEvalSetData(data);
+[~,~,testLabels,~,~,testFeats] = generateEvalSetData(data);
 
 %% TESTING
 switch params.optMethod        
@@ -36,6 +36,9 @@ end
 
 %keyboard;
 testErrs = evaluatePredictionError(testPreds,testLabels,encoding,0);
+if(evalPascalViews)
+    [accPascalViews] = evaluatePascalViews(testPreds(:,3),data.test.views);
+end
 %[valErrs,bestValPred] = evaluatePredictionError(valPreds,valLabels,encoding,0);
 %[trainErrs,bestTrainPred] = evaluatePredictionError(trainPred,trainLabels,encoding,0);
 
@@ -43,9 +46,6 @@ testErrs = evaluatePredictionError(testPreds,testLabels,encoding,0);
 %mean(sum(diff.*diff,2));
 testErrors = [];testMedErrors=[];
 %testErrs = [valErrs;testErrs];
-
-testErrors(1) = mean(testErrors);
-testMedErrors(1) = median(testErrors);
 
 % plot(sort(valErrs),[1:length(valErrs)]./length(valErrs),'r');hold on;
 % plot([0 180],[0 1],'k');
@@ -56,7 +56,12 @@ testMedErrors(1) = median(testErrors);
 
 testErrors(1) = sum(testErrs<=30)/numel(testErrs);
 testMedErrors(1) = median(testErrs);
+if(evalPascalViews)
+    [accPascalViews] = evaluatePascalViews(testPreds(:,3),data.test.views);
+    testErrors(1) = accPascalViews;
+end
 testData = data.test;
+
 %[errSort,IDX] = sort(testErrs,'ascend');
 %plot(errSort,[1:length(errSort)]/length(errSort));pause();close all;
 %visualizePredictions(class,testPreds{1},data.test,encoding,testErrs,'image');

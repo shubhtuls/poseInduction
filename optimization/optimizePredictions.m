@@ -1,4 +1,4 @@
-function [preds] = optimizePredictions(class,useSaved,evalPascalViews,useMirror,useSoftAssignment,azimuthOnly)
+function [preds,testAccuracyOpt] = optimizePredictions(class,useSaved,evalPascalViews,useMirror,useSoftAssignment,azimuthOnly)
 %OPTIMIZEPREDICTIONS Summary of this function goes here
 %   Detailed explanation goes here
 % useSaved is 0/1 : 1 means it uses
@@ -59,7 +59,7 @@ for n=1:N
     end
 end
 %keyboard;
-similarityFeatName = params.similarityFeatName;'vggConv5';
+similarityFeatName = params.similarityFeatName; %'vggConv5';
 spatialFeat = ~isempty(strfind(similarityFeatName,'Pool')) || ~isempty(strfind(similarityFeatName,'Conv'));
 spatialNormSmoothing = params.spatialNormSmoothing;
 
@@ -67,13 +67,14 @@ spatialNormSmoothing = params.spatialNormSmoothing;
 formulationDir = fullfile(cachedir,['optimizationInit' params.vpsDataset],params.features);
 mkdirOptional(formulationDir);
 if(useSaved && exist(fullfile(formulationDir,[class '.mat']),'file'))
-    load(fullfile(formulationDir,[class '.mat']))
+    load(fullfile(formulationDir,[class '.mat']));
 else
     fg = fspecial('gaussian',[5 5],1);
-    load(fullfile(cachedir,['rcnnPredsVps' params.vpsDataset],similarityFeatName,class));
+    var = load(fullfile(cachedir,['rcnnPredsVps' params.vpsDataset],similarityFeatName,class));
     %load(fullfile(cachedir,['rcnnPredsVps' params.vpsDataset],'vggSimilarityCommon16',class));
-    feat = feat(goodInds);
+    feat = var.featStruct{1};feat = feat(goodInds);
     if(useMirror)
+        featMirror = var.featStructMirror{1};
         featMirror = featMirror(goodInds);
         feat = vertcat(feat,featMirror);
     end
@@ -89,6 +90,7 @@ else
     else
         for i=1:length(feat)
             feat{i} = sigmoid(feat{i});
+            feat{i} = (feat{i}(:))';
         end
     end
         
@@ -162,8 +164,8 @@ for iter = 1:50
     end
     
     [testErrsOpt] = evaluatePredictionError({preds},testLabels,encoding,0);
-    testAccuracyOpt = sum(testErrsOpt<=30)/numel(testErrsOpt)
-    testMedErrorOpt = median(testErrsOpt)
+    testAccuracyOpt = sum(testErrsOpt<=30)/numel(testErrsOpt);
+    testMedErrorOpt = median(testErrsOpt);
     disp(numFlips);
 end
 
@@ -183,9 +185,9 @@ testMedError = median(testErrs);
 %% eval left/right/frontal
 if(evalPascalViews)
     [accLabels,~,isCorrectLabels] = evaluatePascalViews(testLabels(:,3),data.test.views);
-    accLabels
+    %accLabels
     [accOpt,isGoodOpt,isCorrectOpt] = evaluatePascalViews(preds(:,3),data.test.views);
-    accOpt    
+    testAccuracyOpt = accOpt;    
     evaluatePascalViews(testPredsAec{1}(:,3),data.test.views)
 end
 
