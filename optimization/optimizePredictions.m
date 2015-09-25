@@ -1,4 +1,4 @@
-function [preds,testAccuracyOpt] = optimizePredictions(class,useSaved,evalPascalViews,useMirror,useSoftAssignment,azimuthOnly)
+function [preds, testAccuracyOpt, testAccuracyOptConf] = optimizePredictions(class,useSaved,evalPascalViews,useMirror,useSoftAssignment,azimuthOnly)
 %OPTIMIZEPREDICTIONS Summary of this function goes here
 %   Detailed explanation goes here
 % useSaved is 0/1 : 1 means it uses
@@ -69,7 +69,7 @@ mkdirOptional(formulationDir);
 if(useSaved && exist(fullfile(formulationDir,[class '.mat']),'file'))
     load(fullfile(formulationDir,[class '.mat']));
 else
-    fg = fspecial('gaussian',[5 5],1);
+    fg = fspecial('gaussian',[3 3],1);
     var = load(fullfile(cachedir,['rcnnPredsVps' params.vpsDataset],similarityFeatName,class));
     %load(fullfile(cachedir,['rcnnPredsVps' params.vpsDataset],'vggSimilarityCommon16',class));
     feat = var.featStruct{1};feat = feat(goodInds);
@@ -83,7 +83,7 @@ else
             tmp = reshape(sigmoid(feat{i}),[14 14 512]);
             for c = 1:512
                 tmp(:,:,c)=tmp(:,:,c)/sum(sum(tmp(:,:,c)));
-                tmp(:,:,c) = conv2(tmp(:,:,c),fg,'same');
+                %tmp(:,:,c) = conv2(tmp(:,:,c),fg,'same');
             end
             feat{i} = (tmp(:))';
         end
@@ -169,9 +169,24 @@ for iter = 1:50
     disp(numFlips);
 end
 
+%% confident preds
+for n=1:N
+    [~,choiceScores] = updateRotationChoice(n,currentPreds,similarFeatInds);
+    unarySort = sort(choiceScores,'descend');
+    scores(n) = unarySort(1);
+    scoreDiffs(n) = unarySort(1) - unarySort(2);
+end
+[~,topInds] = sort(scores,'descend');
+topInds = topInds(1:round(N/3));
+
+
 %% eval
 [testErrsOpt] = evaluatePredictionError({preds},testLabels,encoding,0);
+[testErrsOptConf] = evaluatePredictionError({preds(topInds,:)},testLabels(topInds,:),encoding,0);
+
 testAccuracyOpt = sum(testErrsOpt<=30)/numel(testErrsOpt);
+testAccuracyOptConf = sum(testErrsOptConf<=30)/numel(testErrsOptConf);
+
 testMedErrorOpt = median(testErrsOpt);
 
 [testErrsBase] = evaluatePredictionError(testPredsAec(1),testLabels,encoding,0);
@@ -187,7 +202,9 @@ if(evalPascalViews)
     [accLabels,~,isCorrectLabels] = evaluatePascalViews(testLabels(:,3),data.test.views);
     %accLabels
     [accOpt,isGoodOpt,isCorrectOpt] = evaluatePascalViews(preds(:,3),data.test.views);
-    testAccuracyOpt = accOpt;    
+    [accOptConf,~,~] = evaluatePascalViews(preds(topInds,3),data.test.views(topInds));
+    testAccuracyOpt = accOpt;
+    testAccuracyOptConf = accOptConf;
     evaluatePascalViews(testPredsAec{1}(:,3),data.test.views)
 end
 
@@ -242,14 +259,6 @@ visLabels(:,2) = mod(visLabels(:,2) + pi,2*pi)-pi;
 %showEmbedding(visLabels, data.test.voc_ids, data.test.dataset, data.test.bboxes);
 %visPoseClusters(visLabels(:,2), data.test.voc_ids, data.test.dataset, data.test.bboxes);
 
-for n=1:N
-    [~,choiceScores] = updateRotationChoice(n,currentPreds,similarFeatInds);
-    unarySort = sort(choiceScores,'descend');
-    scores(n) = unarySort(1);
-    scoreDiffs(n) = unarySort(1) - unarySort(2);
-end
-%[~,topInds] = sort(scores,'descend');
-%topInds = topInds(1:round(N/3));
 %showEmbedding(visLabels(topInds,:), data.test.voc_ids(topInds), data.test.dataset(topInds), data.test.bboxes(topInds,:));
 %topInds = topInds(1:round(N/3));
 
