@@ -28,21 +28,3 @@ tar -xf VOCdevkit_18-May-2011.tar
 mv VOCdevkit/* ./data/VOCdevkit/
 rm -r VOCdevkit
 
-# Download and install caffe
-mkdir external
-dirVar="./external/caffe"
-if [ ! -d "$dirVar" ]; then
-    # Control will enter here if $DIRECTORY doesn't exist.
-    git clone git@bitbucket.org:shubhtuls/caffe.git $dirVar
-    touch "$dirVar/__init__.py"
-    cd "$dirVar"
-    cp Makefile.config.example Makefile.config
-    git checkout pose
-    git pull origin pose
-    #now compile caffe and matcaffe in external/caffePose
-    #make -j8 caffe
-    #make matcaffe
-    #make pycaffe
-    cd ../..
-    #echo $dirVar
-fi
