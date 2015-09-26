@@ -11,9 +11,7 @@ global rotationJointDataDir
 global params
 global pascalImagesDir
 global imagenetImagesDir
-global ilsvrcImagesDir
 global segkpAnnotationDir
-global ilsvrcDir
 global caffeModelDir
 global caffeProtoDir
 global basedir
@@ -46,8 +44,8 @@ caffeModelDir = fullfile(cachedir,'snapshots'); %directory where caffemodels are
 %imagenetImagesDir = '/work5/shubhtuls/cachedir/Datasets/imagenet/images/';
 %imagenetDir = '/work5/shubhtuls/cachedir/Datasets/imagenet/';
 
-ilsvrcImagesDir = '/work5/shubhtuls/cachedir/Datasets/ilsvrc13/ILSVRC2013_DET_train/';
-ilsvrcDir = '/work5/shubhtuls/cachedir/Datasets/ilsvrc13/';
+%ilsvrcImagesDir = '/work5/shubhtuls/cachedir/Datasets/ilsvrc13/ILSVRC2013_DET_train/';
+%ilsvrcDir = '/work5/shubhtuls/cachedir/Datasets/ilsvrc13/';
 
 %annotationDir = '/work5/shubhtuls/cachedir/Datasets/pascalAnnotations';
 %candsDir = '/work5/shubhtuls/cachedir/Datasets/pascalCandidates/candidateAnnotations/';

@@ -7,12 +7,10 @@ global rcnnVpsImagenetDataDir
 global rcnnVpsJointDataDir
 global rotationPascalDataDir
 global rotationImagenetDataDir
-global rotationIlsvrcDataDir
 global rotationJointDataDir
 global params
 global pascalImagesDir
 global imagenetImagesDir
-global ilsvrcImagesDir
 global segkpAnnotationDir
 global ilsvrcDir
 global caffeModelDir

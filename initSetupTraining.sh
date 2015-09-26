@@ -26,5 +26,4 @@ mv VOCtrainval_11-May-2012.tar data/
 
 tar -xf VOCdevkit_18-May-2011.tar
 mv VOCdevkit/* ./data/VOCdevkit/
-rm -r VOCdevkit
-
+rm -rf VOCdevkit
