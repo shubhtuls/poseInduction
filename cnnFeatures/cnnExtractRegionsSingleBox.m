@@ -1,10 +1,20 @@
 function [batches, batch_padding] = cnnExtractRegionsSingleBox(dataStruct, cnn_model,mirror)
 
 globals;
+imgLoc = 0;
+
+if(isfield(dataStruct,'imgDir') && isfield(dataStruct,'imgExt'))
+    imgLoc = 1;
+end
 
 singleImage = length(dataStruct.voc_image_id) == 1;
 if(singleImage)
-    [imgDir,imgExt] = getDatasetImgDir(dataStruct.dataset{1});
+    if(imgLoc)
+        imgDir = dataStruct.imgDir{1};
+        imgExt = dataStruct.imgExt{1};
+    else
+        [imgDir,imgExt] = getDatasetImgDir(dataStruct.dataset{1});
+    end
     im = imread(fullfile(imgDir,[dataStruct.voc_image_id{1} imgExt]));
     if(size(im,3)==1)
         im(:,:,2) = im(:,:,1);
@@ -35,7 +45,12 @@ for batch = 1:num_batches
   for j = batch_start:batch_end
     bbox = dataStruct.bbox(j,:);
     if(~singleImage)
-        [imgDir,imgExt] = getDatasetImgDir(dataStruct.dataset{j});
+        if(imgLoc)
+            imgDir = dataStruct.imgDir{j};
+            imgExt = dataStruct.imgExt{j};
+        else
+            [imgDir,imgExt] = getDatasetImgDir(dataStruct.dataset{j});
+        end
         im = imread(fullfile(imgDir,[dataStruct.voc_image_id{j} imgExt]));
         if(size(im,3)==1)
             im(:,:,2) = im(:,:,1);

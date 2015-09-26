@@ -3,6 +3,8 @@ function [] = mainPreprocess()
 %   Detailed explanation goes here
 
 globals;
+startupTrain;
+
 %% rigid classes
 for c = params.classInds
     class = pascalIndexClass(c, 'pascal');
